@@ -22,10 +22,23 @@ model Category {
 }
 
 model Post {
-  id         Int      @id @default(autoincrement())
+  id         Int        @id @default(autoincrement())
   title      String
+  subtitle   String?
+  slug       String     @unique
   content    String
+  thumbnail  String?
+  gallery    String[]
+  tags       String[]
+  views      Int        @default(0)
+  status     PostStatus @default(DRAFT)
   categoryId Int
-  category   Category @relation(fields: [categoryId], references: [id])
-  createdAt  DateTime @default(now())
+  category   Category   @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
 }
