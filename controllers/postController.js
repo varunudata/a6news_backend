@@ -14,10 +14,24 @@ const createPost = async (req, res) => {
     const slug = slugify(title, { lower: true, strict: true });
     const existingSlug = await prisma.post.findUnique({ where: { slug } });
     if (existingSlug) {
-      return res
-        .status(400)
-        .json({ success: false, message: "A post with title already exists" });
+      return res.status(400).json({
+        success: false,
+        message: "A post with that title already exists",
+      });
     }
+    const parsedTags =
+      typeof tags === "string" && tags.trim().length > 0
+        ? tags.split(",").map((t) => t.trim())
+        : Array.isArray(tags)
+        ? tags
+        : [];
+    const parsedGallery =
+      typeof gallery === "string" && gallery.trim().length > 0
+        ? gallery.split(",").map((g) => g.trim())
+        : Array.isArray(gallery)
+        ? gallery
+        : [];
+    const thumb = thumbnail && thumbnail !== "undefined" ? thumbnail : null;
     const newPost = await prisma.post.create({
       data: {
         title,
@@ -25,9 +39,9 @@ const createPost = async (req, res) => {
         subtitle: subtitle || null,
         content,
         categoryId: Number(categoryId),
-        thumbnail: thumbnail || null,
-        gallery: gallery || [],
-        tags: tags || [],
+        thumbnail: thumb,
+        gallery: parsedGallery,
+        tags: parsedTags,
       },
     });
     return res.status(200).json({
@@ -67,6 +81,12 @@ const getAllPosts = async (req, res) => {
 const getPostBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
+    if (!slug || slug === "undefined") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid slug parameter",
+      });
+    }
     const post = await prisma.post.findUnique({
       where: { slug },
       include: { category: true },
