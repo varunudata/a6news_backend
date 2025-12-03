@@ -31,7 +31,11 @@ const createPost = async (req, res) => {
         : Array.isArray(gallery)
         ? gallery
         : [];
-    const thumb = thumbnail && thumbnail !== "undefined" ? thumbnail : null;
+    const thumb =
+      thumbnail && thumbnail !== "undefined" && thumbnail !== "null"
+        ? thumbnail
+        : null;
+
     const newPost = await prisma.post.create({
       data: {
         title,
