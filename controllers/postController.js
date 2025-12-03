@@ -64,20 +64,41 @@ const createPost = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
   try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const categoryId = req.query.categoryId
+      ? Number(req.query.categoryId)
+      : null;
+    const sort = req.query.sort === "oldest" ? "asc" : "desc";
+    const skip = (page - 1) * limit;
+    const where = {};
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
     const posts = await prisma.post.findMany({
-      orderBy: { createdAt: "desc" },
+      where,
+      orderBy: { createdAt: sort },
+      skip,
+      take: limit,
       include: { category: true },
     });
+    const totalPosts = await prisma.post.count({ where });
+    const totalPages = Math.ceil(totalPosts / limit);
     return res.status(200).json({
       success: true,
-      message: "All posts fetched successfully",
       data: posts,
+      pagination: {
+        page,
+        limit,
+        totalPosts,
+        totalPages,
+      },
     });
   } catch (error) {
-    console.log("Error in getting all posts :", error);
+    console.log("Error in pagination:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error in getting all posts",
+      message: "Error fetching paginated posts",
     });
   }
 };
