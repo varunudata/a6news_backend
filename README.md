@@ -4,7 +4,7 @@ This is the backend API and database service for **A6News**, providing the core 
 
 🔗 **[Frontend Repository](https://github.com/varunudata/a6news_frontend.git)**
 
-## ✨ Features
+##  Features
 
 - **Robust REST API:** Comprehensive endpoints for all Content Management System (CMS) operations.
 - **Secure Authentication:** User registration, login, and protected routes using JSON Web Tokens (JWT) and Bcrypt for password hashing.
@@ -12,7 +12,7 @@ This is the backend API and database service for **A6News**, providing the core 
 - **File Handling:** Supports `multipart/form-data` via Multer, enabling rich media post submissions.
 - **Scalable Architecture:** Clean separation of concerns with dedicated routes, controllers, and services.
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 - **Runtime:** [Node.js](https://nodejs.org/)
 - **Framework:** [Express.js](https://expressjs.com/)
@@ -34,7 +34,7 @@ server/
 └── server.js         # Express application entry point
 ```
 
-## 🚦 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -81,13 +81,13 @@ server/
    ```
    The backend will now be running on `http://localhost:4004`.
 
-## 🔌 API Endpoints Overview
+##  API Endpoints Overview
 
 - **Auth** (`/api/auth`): Registration and login endpoints.
 - **Categories** (`/api/categories`): Fetch, create, update, and delete categories.
 - **Posts** (`/api/posts`): Comprehensive CRUD operations for news articles, including fetching by category and updating view statistics.
 
-## 🗄️ Database Models
+##  Database Models
 
 - **User**: Authentication credentials and role-based access.
 - **Category**: Classifications for news articles.
