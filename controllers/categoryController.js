@@ -42,7 +42,7 @@ const createCategory = async (req, res) => {
 const getAllCategories = async (req, res) => {
   try {
     const allCategories = await prisma.category.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
     });
     return res.status(200).json({
       success: true,
@@ -112,11 +112,22 @@ const deleteCategory = async (req, res) => {
     const catId = Number(req.params.id);
     const existing = await prisma.category.findUnique({
       where: { id: Number(catId) },
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
     });
     if (!existing) {
       return res
         .status(404)
         .json({ success: false, message: "Category not found" });
+    }
+    if (existing._count.posts > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete category as it has associated posts",
+      });
     }
     await prisma.category.delete({ where: { id: catId } });
     return res
