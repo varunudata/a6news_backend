@@ -7,6 +7,7 @@ require("dotenv").config();
 const authRoutes = require("./routes/authRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const postRoutes = require("./routes/postRoutes");
+const tickerRoutes = require("./routes/tickerRoutes");
 
 const app = express();
 const upload = multer();
@@ -22,6 +23,7 @@ console.log("Cloud name:", process.env.CLOUDINARY_CLOUD_NAME);
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/ticker", tickerRoutes);
 
 app.get("/", (req, res) => {
   res.send("Express backend is running!");
