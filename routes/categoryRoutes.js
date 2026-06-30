@@ -5,6 +5,7 @@ const {
   getAllCategories,
   deleteCategory,
   getCategoryById,
+  reorderCategories,
 } = require("../controllers/categoryController");
 
 const adminMiddleware = require("../middlewares/adminMiddleware");
@@ -14,5 +15,6 @@ router.post("/", authMiddleware, adminMiddleware, createCategory);
 router.get("/", getAllCategories);
 router.get("/:id", getCategoryById);
 router.delete("/:id", authMiddleware, adminMiddleware, deleteCategory);
+router.put("/reorder", authMiddleware, adminMiddleware, reorderCategories);
 
 module.exports = router;

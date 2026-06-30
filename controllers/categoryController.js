@@ -42,7 +42,7 @@ const createCategory = async (req, res) => {
 const getAllCategories = async (req, res) => {
   try {
     const allCategories = await prisma.category.findMany({
-      orderBy: { createdAt: "asc" },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     });
     return res.status(200).json({
       success: true,
@@ -142,9 +142,39 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+const reorderCategories = async (req, res) => {
+  try {
+    const { order } = req.body;
+    // order is an array of { id, sortOrder }
+    if (!Array.isArray(order) || order.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid order data" });
+    }
+    await Promise.all(
+      order.map(({ id, sortOrder }) =>
+        prisma.category.update({
+          where: { id: Number(id) },
+          data: { sortOrder: Number(sortOrder) },
+        })
+      )
+    );
+    return res
+      .status(200)
+      .json({ success: true, message: "Category order updated successfully" });
+  } catch (error) {
+    console.log("Error reordering categories:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error while reordering categories",
+    });
+  }
+};
+
 module.exports = {
   createCategory,
   getAllCategories,
   getCategoryById,
   deleteCategory,
+  reorderCategories,
 };
