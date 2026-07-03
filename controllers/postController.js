@@ -11,7 +11,10 @@ const createPost = async (req, res) => {
         message: "Title, Content, Category are required",
       });
     }
-    const slug = slugify(title, { lower: true, strict: true });
+    let slug = slugify(title, { lower: true, strict: true });
+    if (!slug) {
+      slug = Date.now().toString();
+    }
     const existingSlug = await prisma.post.findUnique({ where: { slug } });
     if (existingSlug) {
       return res.status(400).json({
@@ -194,9 +197,13 @@ const updatePost = async (req, res) => {
     const { id } = req.params;
     const { title, subtitle, content, categoryId, tags, thumbnail, gallery } =
       req.body;
-    const slug = title
-      ? slugify(title, { lower: true, strict: true })
-      : undefined;
+    let slug = undefined;
+    if (title) {
+      slug = slugify(title, { lower: true, strict: true });
+      if (!slug) {
+        slug = undefined; // Don't override existing fallback slugs on update
+      }
+    }
     const updatedPost = await prisma.post.update({
       where: { id: Number(id) },
       data: {
