@@ -29,6 +29,7 @@ model Post {
   slug       String     @unique
   content    String
   thumbnail  String?
+  youtubeLink String?
   gallery    String[]
   tags       String[]
   views      Int        @default(0)

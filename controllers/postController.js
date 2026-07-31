@@ -3,7 +3,7 @@ const slugify = require("slugify");
 
 const createPost = async (req, res) => {
   try {
-    const { title, subtitle, content, categoryId, tags, thumbnail, gallery } =
+    let { title, subtitle, content, categoryId, tags, thumbnail, gallery, youtubeLink } =
       req.body;
     if (!title || !content || !categoryId) {
       return res.status(400).json({
@@ -47,6 +47,7 @@ const createPost = async (req, res) => {
         content,
         categoryId: Number(categoryId),
         thumbnail: thumb,
+        youtubeLink: youtubeLink || null,
         gallery: parsedGallery,
         tags: parsedTags,
       },
@@ -195,7 +196,7 @@ const getLatestPostsPerCategory = async (req, res) => {
 const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, subtitle, content, categoryId, tags, thumbnail, gallery } =
+    const { title, subtitle, content, categoryId, tags, thumbnail, gallery, youtubeLink } =
       req.body;
     let slug = undefined;
     if (title) {
@@ -213,6 +214,7 @@ const updatePost = async (req, res) => {
         ...(content !== undefined && { content }),
         ...(categoryId && { categoryId: Number(categoryId) }),
         ...(thumbnail !== undefined && { thumbnail }),
+        ...(youtubeLink !== undefined && { youtubeLink }),
         ...(gallery !== undefined && { gallery }),
         ...(tags !== undefined && { tags }),
       },
