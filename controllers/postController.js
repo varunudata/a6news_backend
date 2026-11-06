@@ -24,15 +24,15 @@ const createPost = async (req, res) => {
     }
     const parsedTags =
       typeof tags === "string" && tags.trim().length > 0
-        ? tags.split(",").map((t) => t.trim())
+        ? tags.split(",").map((t) => t.trim()).filter(Boolean)
         : Array.isArray(tags)
-        ? tags
+        ? tags.map((t) => (typeof t === "string" ? t.trim() : t)).filter(Boolean)
         : [];
     const parsedGallery =
       typeof gallery === "string" && gallery.trim().length > 0
-        ? gallery.split(",").map((g) => g.trim())
+        ? gallery.split(",").map((g) => g.trim()).filter(Boolean)
         : Array.isArray(gallery)
-        ? gallery
+        ? gallery.map((g) => (typeof g === "string" ? g.trim() : g)).filter(Boolean)
         : [];
     const thumb =
       thumbnail && thumbnail !== "undefined" && thumbnail !== "null"
@@ -50,6 +50,7 @@ const createPost = async (req, res) => {
         youtubeLink: youtubeLink || null,
         gallery: parsedGallery,
         tags: parsedTags,
+        status: req.body.status || "PUBLISHED",
       },
     });
     return res.status(200).json({
@@ -140,6 +141,9 @@ const getPostBySlug = async (req, res) => {
 const getPostById = async (req, res) => {
   try {
     const { id } = req.params;
+    if (isNaN(Number(id))) {
+      return res.status(400).json({ success: false, message: "Invalid post ID" });
+    }
     const post = await prisma.post.findUnique({
       where: { id: Number(id) },
       include: { category: true },
@@ -196,15 +200,49 @@ const getLatestPostsPerCategory = async (req, res) => {
 const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, subtitle, content, categoryId, tags, thumbnail, gallery, youtubeLink } =
+    if (isNaN(Number(id))) {
+      return res.status(400).json({ success: false, message: "Invalid post ID" });
+    }
+    const { title, subtitle, content, categoryId, tags, thumbnail, gallery, youtubeLink, status } =
       req.body;
     let slug = undefined;
     if (title) {
       slug = slugify(title, { lower: true, strict: true });
       if (!slug) {
         slug = undefined; // Don't override existing fallback slugs on update
+      } else {
+        const existingSlug = await prisma.post.findFirst({
+          where: { slug, NOT: { id: Number(id) } },
+        });
+        if (existingSlug) {
+          return res.status(400).json({
+            success: false,
+            message: "Another post with that title already exists",
+          });
+        }
       }
     }
+
+    let parsedTags = undefined;
+    if (tags !== undefined) {
+      parsedTags =
+        typeof tags === "string" && tags.trim().length > 0
+          ? tags.split(",").map((t) => t.trim()).filter(Boolean)
+          : Array.isArray(tags)
+          ? tags.map((t) => (typeof t === "string" ? t.trim() : t)).filter(Boolean)
+          : [];
+    }
+
+    let parsedGallery = undefined;
+    if (gallery !== undefined) {
+      parsedGallery =
+        typeof gallery === "string" && gallery.trim().length > 0
+          ? gallery.split(",").map((g) => g.trim()).filter(Boolean)
+          : Array.isArray(gallery)
+          ? gallery.map((g) => (typeof g === "string" ? g.trim() : g)).filter(Boolean)
+          : [];
+    }
+
     const updatedPost = await prisma.post.update({
       where: { id: Number(id) },
       data: {
@@ -215,8 +253,9 @@ const updatePost = async (req, res) => {
         ...(categoryId && { categoryId: Number(categoryId) }),
         ...(thumbnail !== undefined && { thumbnail }),
         ...(youtubeLink !== undefined && { youtubeLink }),
-        ...(gallery !== undefined && { gallery }),
-        ...(tags !== undefined && { tags }),
+        ...(parsedGallery !== undefined && { gallery: parsedGallery }),
+        ...(parsedTags !== undefined && { tags: parsedTags }),
+        ...(status !== undefined && { status }),
       },
     });
     if (!updatedPost) {
@@ -241,6 +280,9 @@ const updatePost = async (req, res) => {
 const deletePost = async (req, res) => {
   try {
     const { id } = req.params;
+    if (isNaN(Number(id))) {
+      return res.status(400).json({ success: false, message: "Invalid post ID" });
+    }
     await prisma.post.delete({ where: { id: Number(id) } });
     return res
       .status(200)

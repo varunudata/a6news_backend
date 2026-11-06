@@ -61,6 +61,12 @@ const getAllCategories = async (req, res) => {
 const getCategoryById = async (req, res) => {
   try {
     const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category ID",
+      });
+    }
     const page = Number(req.query.page) || 1;
     const limit = 6;
     const skip = (page - 1) * limit;
@@ -74,9 +80,6 @@ const getCategoryById = async (req, res) => {
         message: "Category not found",
       });
     }
-    console.log("PARAMS:", req.params);
-    console.log("QUERY:", req.query);
-    console.log("URL:", req.originalUrl);
     const posts = await prisma.post.findMany({
       where: { categoryId: id },
       skip,
@@ -110,8 +113,14 @@ const getCategoryById = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     const catId = Number(req.params.id);
+    if (isNaN(catId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category ID",
+      });
+    }
     const existing = await prisma.category.findUnique({
-      where: { id: Number(catId) },
+      where: { id: catId },
       include: {
         _count: {
           select: { posts: true },
