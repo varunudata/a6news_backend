@@ -1,4 +1,5 @@
 const { registerUser, loginUser } = require("../services/authService");
+const prisma = require("../prisma/client");
 
 const register = async (req, res) => {
   try {
@@ -37,4 +38,23 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, username: true, role: true },
+      orderBy: { id: "asc" },
+    });
+    return res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+    });
+  }
+};
+
+module.exports = { register, login, getAllUsers };

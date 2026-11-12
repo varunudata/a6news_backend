@@ -182,7 +182,9 @@ const getLatestPostsPerCategory = async (req, res) => {
       .map((c) =>
         c.posts.length > 0 ? { category: c.name, ...c.posts[0] } : null
       )
-      .filter(Boolean);
+      .filter(Boolean)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 6);
 
     return res.status(200).json({
       success: true,
