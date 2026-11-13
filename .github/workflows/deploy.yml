@@ -44,6 +44,7 @@ jobs:
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
+
       - name: Deploy backend
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -52,7 +53,8 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 \
             -o BatchMode=yes \
             "$EC2_USER@$EC2_HOST" \
-            'cd ~/A6News/server &&
+            'export PATH=/home/ubuntu/.nvm/versions/node/v22.23.4/bin:$PATH &&
+             cd ~/A6News/server &&
              git pull --ff-only origin main &&
              npm ci &&
              npx prisma generate &&
