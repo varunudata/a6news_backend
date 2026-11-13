@@ -44,7 +44,6 @@ jobs:
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
-
       - name: Deploy backend
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -55,8 +54,16 @@ jobs:
             "$EC2_USER@$EC2_HOST" \
             'export PATH=/home/ubuntu/.nvm/versions/node/v22.23.4/bin:$PATH &&
              cd ~/A6News/server &&
+             OLD_COMMIT=$(git rev-parse HEAD) &&
              git pull --ff-only origin main &&
-             npm ci &&
-             npx prisma generate &&
+             NEW_COMMIT=$(git rev-parse HEAD) &&
+             if git diff --quiet "$OLD_COMMIT" "$NEW_COMMIT" -- package-lock.json; then
+               echo "Dependencies unchanged. Skipping npm ci."
+             else
+               echo "Dependencies changed. Installing packages..."
+               npm ci &&
+               npx prisma generate ||
+               exit 1
+             fi &&
              pm2 restart a6news-backend --update-env &&
              pm2 save'
